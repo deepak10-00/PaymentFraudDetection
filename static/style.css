@@ -1,0 +1,103 @@
+:root {
+    --theme-primary: #4A5568; /* Slate Blue */
+    --theme-secondary: #718096;
+    --theme-danger: #C53030;    /* Muted Red */
+    --theme-warning: #B7791F;   /* Muted Amber */
+    --theme-success: #2F855A;   /* Muted Green */
+    --theme-background: #F7FAFC;
+    --theme-text-primary: #2D3748;
+    --theme-text-secondary: #E2E8F0;
+    --theme-border: #E2E8F0;
+}
+
+body {
+    font-size: .875rem;
+    background-color: var(--theme-background);
+}
+
+.feather {
+    width: 16px;
+    height: 16px;
+    vertical-align: text-bottom;
+}
+
+/* 
+ * Sidebar 
+ */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100; /* Behind the navbar */
+    padding: 48px 0 0; /* Height of navbar */
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .position-sticky {
+    position: relative;
+    top: 0;
+    height: calc(100vh - 48px);
+    padding-top: .5rem;
+    overflow-x: hidden;
+    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+}
+
+/*
+ * Navbar
+ */
+.navbar-brand {
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+    font-size: 1rem;
+    background-color: rgba(0, 0, 0, .25);
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+}
+
+.navbar .navbar-toggler {
+    top: .25rem;
+    right: 1rem;
+}
+
+.navbar .form-control {
+    padding: .75rem 1rem;
+    border-width: 0;
+    border-radius: 0;
+}
+
+.form-control-dark {
+    color: #fff;
+    background-color: rgba(255, 255, 255, .1);
+    border-color: rgba(255, 255, 255, .1);
+}
+
+.form-control-dark:focus {
+    border-color: transparent;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
+}
+
+/* Custom KPI Card Styles */
+.kpi-card {
+    color: var(--theme-text-secondary);
+}
+.kpi-card .card-title { color: var(--theme-text-secondary); }
+.kpi-card .display-4 { opacity: 0.6; }
+
+.kpi-total { background-color: var(--theme-primary); }
+.kpi-fraud { background-color: var(--theme-danger); }
+.kpi-rate { background-color: var(--theme-warning); }
+
+/* Custom Button Styles */
+.btn-primary {
+    background-color: var(--theme-primary);
+    border-color: var(--theme-primary);
+}
+.btn-primary:hover {
+    background-color: #2D3748;
+    border-color: #2D3748;
+}
+
+.btn-secondary {
+    background-color: var(--theme-secondary);
+    border-color: var(--theme-secondary);
+}

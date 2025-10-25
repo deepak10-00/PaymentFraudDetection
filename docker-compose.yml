@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # These environment variables will be passed to the FastAPI app
+      MYSQL_HOST: mysql
+      MYSQL_USER: fraud_user
+      MYSQL_PASSWORD: 'mysecretpassword123'
+      MYSQL_DB: fraud_detection_db
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_DB: honeypot_db
+      # MONGO_USER and MONGO_PASSWORD removed for local development
+      RISK_THRESHOLD: 0.7
+      ML_MODEL_PATH: /app/app/ml/models/fraud_model.pkl
+    depends_on:
+      - mysql
+      - mongodb
+    networks:
+      - proactive_network
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: 'mysecretpassword123'
+      MYSQL_DATABASE: fraud_detection_db
+      MYSQL_USER: fraud_user
+      MYSQL_PASSWORD: 'mysecretpassword123'
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql # Mount the init script
+    ports:
+      - "3306:3306"
+    networks:
+      - proactive_network
+
+  mongodb:
+    image: mongo:5.0 # Using mongo:5.0
+    environment:
+      # MONGO_INITDB_ROOT_USERNAME and MONGO_INITDB_ROOT_PASSWORD removed to disable auth
+      MONGO_INITDB_DATABASE: honeypot_db
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - proactive_network
+
+networks:
+  proactive_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  mongodb_data:

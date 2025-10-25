@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - FraudShield</title>
+    <style>
+        :root {
+            --sidebar-bg: #1a222e;
+            --main-bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-primary: #333;
+            --text-secondary: #777;
+            --accent-blue: #3498db;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --border-color: #e9ecef;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--main-bg);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: #ecf0f1;
+            padding: 20px;
+            height: 100vh;
+            position: fixed;
+        }
+
+        .sidebar h1 {
+            font-size: 1.5em;
+            margin: 10px 0 30px 0;
+            text-align: center;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li a {
+            display: block;
+            color: #bdc3c7;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar ul li a.active, .sidebar ul li a:hover {
+            background-color: #34495e;
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            padding: 40px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+            padding: 25px;
+            margin-bottom: 30px; /* Added margin-bottom for spacing between cards */
+        }
+
+        .settings-card h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #34495e;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+
+        .form-group .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-blue);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--accent-blue);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        #threshold-value {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--accent-blue);
+            min-width: 50px;
+        }
+
+        button {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button.retrain-button {
+            background-color: var(--accent-green);
+        }
+
+        button.retrain-button:hover {
+            background-color: #27ae60;
+        }
+
+        #save-status, #retrain-status {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h1>FraudShield</h1>
+        <ul>
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="/analytics">Analytics</a></li>
+            <li><a href="/settings" class="active">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="card settings-card">
+            <h2>System Settings</h2>
+            <div class="form-group">
+                <label for="risk-threshold">Risk Analysis Threshold</label>
+                <div class="slider-container">
+                    <input type="range" id="risk-threshold" name="risk-threshold" min="0" max="1" step="0.05">
+                    <span id="threshold-value">--</span>
+                </div>
+            </div>
+            <button id="save-button">Save Settings</button>
+            <p id="save-status"></p>
+        </div>
+
+        <div class="card settings-card">
+            <h2>Machine Learning Model</h2>
+            <div class="form-group">
+                <label>Retrain Model with New Data</label>
+                <p>This will retrain the fraud detection model using all collected legitimate and honeypot data.</p>
+                <button id="retrain-button" class="retrain-button">Retrain Model Now</button>
+                <p id="retrain-status"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slider = document.getElementById('risk-threshold');
+            const thresholdValue = document.getElementById('threshold-value');
+            const saveButton = document.getElementById('save-button');
+            const saveStatus = document.getElementById('save-status');
+            const retrainButton = document.getElementById('retrain-button');
+            const retrainStatus = document.getElementById('retrain-status');
+
+            // Fetch initial settings
+            fetch('/api/settings')
+                .then(response => response.json())
+                .then(data => {
+                    const currentThreshold = data.risk_threshold;
+                    slider.value = currentThreshold;
+                    thresholdValue.textContent = currentThreshold.toFixed(2);
+                });
+
+            // Update display value when slider moves
+            slider.addEventListener('input', () => {
+                thresholdValue.textContent = parseFloat(slider.value).toFixed(2);
+            });
+
+            // Save new settings
+            saveButton.addEventListener('click', () => {
+                const newThreshold = parseFloat(slider.value);
+                fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ risk_threshold: newThreshold }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        saveStatus.textContent = data.message;
+                        saveStatus.style.color = 'var(--accent-green)';
+                    } else {
+                        saveStatus.textContent = 'Error saving settings.';
+                        saveStatus.style.color = 'var(--accent-red)';
+                    }
+                    // Hide status message after 3 seconds
+                    setTimeout(() => {
+                        saveStatus.textContent = '';
+                    }, 3000);
+                });
+            });
+
+            // Retrain Model button click handler
+            retrainButton.addEventListener('click', () => {
+                retrainStatus.textContent = 'Retraining initiated... This may take a moment.';
+                retrainStatus.style.color = 'var(--accent-blue)';
+                retrainButton.disabled = true; // Disable button during retraining
+
+                fetch('/api/retrain_model', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        retrainStatus.textContent = data.message;
+                        retrainStatus.style.color = 'var(--accent-green)';
+                    } else {
+                        retrainStatus.textContent = 'Error initiating retraining.';
+                        retrainStatus.style.color = 'var(--accent-red)';
+                    }
+                    retrainButton.disabled = false; // Re-enable button
+                    setTimeout(() => {
+                        retrainStatus.textContent = '';
+                    }, 5000); // Hide status after 5 seconds
+                })
+                .catch(error => {
+                    console.error('Error during retraining request:', error);
+                    retrainStatus.textContent = 'Network error or server issue during retraining.';
+                    retrainStatus.style.color = 'var(--accent-red)';
+                    retrainButton.disabled = false; // Re-enable button
+                    setTimeout(() => {
+                        retrainStatus.textContent = '';
+                    }, 5000);
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

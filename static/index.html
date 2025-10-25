@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proactive Fraud Detection Dashboard</title>
+    <style>
+        :root {
+            --sidebar-bg: #1a222e;
+            --main-bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-primary: #333;
+            --text-secondary: #777;
+            --accent-green: #2ecc71;
+            --accent-orange: #f39c12;
+            --accent-red: #e74c3c;
+            --border-color: #e9ecef;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--main-bg);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: #ecf0f1;
+            padding: 20px;
+            height: 100vh;
+            position: fixed;
+        }
+
+        .sidebar h1 {
+            font-size: 1.5em;
+            margin: 10px 0 30px 0;
+            text-align: center;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li a {
+            display: block;
+            color: #bdc3c7;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar ul li a.active, .sidebar ul li a:hover {
+            background-color: #34495e;
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            padding: 40px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+            padding: 25px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card .icon {
+            font-size: 2.5em;
+            margin-right: 20px;
+            padding: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-legit {
+            background-color: #eafaf1;
+            color: var(--accent-green);
+        }
+
+        .icon-suspicious {
+            background-color: #fef5e7;
+            color: var(--accent-orange);
+        }
+
+        .icon-fraud {
+            background-color: #fdedec;
+            color: var(--accent-red);
+        }
+
+        .card-content h3 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .card-content p {
+            margin: 5px 0 0;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .table-card {
+            margin-top: 20px;
+        }
+
+        .table-card h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #34495e;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        td {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h1>FraudShield</h1>
+        <ul>
+            <li><a href="/" class="active">Dashboard</a></li>
+            <li><a href="/analytics">Analytics</a></li>
+            <li><a href="/settings">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="kpi-grid">
+            <div class="card">
+                <div class="icon icon-legit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+                <div class="card-content">
+                    <h3 id="total-legitimate">--</h3>
+                    <p>Legitimate Transactions</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="icon icon-suspicious">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                </div>
+                <div class="card-content">
+                    <h3 id="total-suspicious">--</h3>
+                    <p>Suspicious Transactions</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="icon icon-fraud">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+                <div class="card-content">
+                    <h3 id="fraud-percentage">--</h3>
+                    <p>Fraud Percentage</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card table-card">
+            <h2>Honeypot Activity Logs</h2>
+            <table id="honeypot-logs-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Transaction ID</th>
+                        <th>User ID</th>
+                        <th>Amount</th>
+                        <th>Country</th>
+                        <th>Payment Method</th>
+                        <th>Attacker IP</th>
+                        <th>Attempted Actions</th>
+                        <th>Scaled Features</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="card table-card">
+            <h2>Recent Legitimate Transactions</h2>
+            <table id="legitimate-transactions-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Transaction ID</th>
+                        <th>User ID</th>
+                        <th>Amount</th>
+                        <th>Country</th>
+                        <th>Payment Method</th>
+                        <th>Risk Score</th>
+                        <th>Scaled Features</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fetchData = () => {
+                fetch('/api/dashboard_data')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update KPI cards
+                        document.getElementById('total-legitimate').textContent = data.summary.total_legitimate;
+                        document.getElementById('total-suspicious').textContent = data.summary.total_suspicious;
+                        
+                        const fraudPercentageEl = document.getElementById('fraud-percentage');
+                        const fraudValue = parseFloat(data.summary.fraud_percentage.replace('%', ''));
+                        fraudPercentageEl.textContent = data.summary.fraud_percentage;
+
+                        // Update color based on fraud percentage
+                        const fraudCardIcon = fraudPercentageEl.closest('.card').querySelector('.icon');
+                        if (fraudValue > 10) {
+                            fraudPercentageEl.style.color = 'var(--accent-red)';
+                            fraudCardIcon.style.backgroundColor = '#fdedec';
+                            fraudCardIcon.style.color = 'var(--accent-red)';
+                        } else if (fraudValue > 5) {
+                            fraudPercentageEl.style.color = 'var(--accent-orange)';
+                            fraudCardIcon.style.backgroundColor = '#fef5e7';
+                            fraudCardIcon.style.color = 'var(--accent-orange)';
+                        } else {
+                            fraudPercentageEl.style.color = 'var(--accent-green)';
+                            fraudCardIcon.style.backgroundColor = '#eafaf1';
+                            fraudCardIcon.style.color = 'var(--accent-green)';
+                        }
+
+                        // Update Honeypot Logs table
+                        const honeypotTableBody = document.querySelector('#honeypot-logs-table tbody');
+                        honeypotTableBody.innerHTML = '';
+                        if (data.honeypot_logs.length === 0) {
+                            const row = honeypotTableBody.insertRow();
+                            const cell = row.insertCell();
+                            cell.colSpan = 9; // Adjusted colspan
+                            cell.textContent = 'No suspicious activity has been logged yet.';
+                            cell.style.textAlign = 'center';
+                            cell.style.padding = '20px';
+                        } else {
+                            data.honeypot_logs.forEach(log => {
+                                const row = honeypotTableBody.insertRow();
+                                row.insertCell().textContent = new Date(log["Timestamp"]).toLocaleString();
+                                row.insertCell().textContent = log["Transaction ID"];
+                                row.insertCell().textContent = log["User ID"];
+                                row.insertCell().textContent = `$${log["Amount"].toFixed(2)}`;
+                                row.insertCell().textContent = log["Country"];
+                                row.insertCell().textContent = log["Payment Method"];
+                                row.insertCell().textContent = log["Attacker IP"];
+                                row.insertCell().textContent = log["Attempted Actions"];
+                                row.insertCell().textContent = JSON.stringify(log["Scaled Features"]); // Display scaled features
+                            });
+                        }
+
+                        // Update Legitimate Transactions table
+                        const legitimateTableBody = document.querySelector('#legitimate-transactions-table tbody');
+                        legitimateTableBody.innerHTML = '';
+                        if (data.legitimate_transactions.length === 0) {
+                            const row = legitimateTableBody.insertRow();
+                            const cell = row.insertCell();
+                            cell.colSpan = 8; // Adjusted colspan
+                            cell.textContent = 'No legitimate transactions have been processed yet.';
+                            cell.style.textAlign = 'center';
+                            cell.style.padding = '20px';
+                        } else {
+                            data.legitimate_transactions.forEach(trans => {
+                                const row = legitimateTableBody.insertRow();
+                                row.insertCell().textContent = new Date(trans["Timestamp"]).toLocaleString();
+                                row.insertCell().textContent = trans["Transaction ID"];
+                                row.insertCell().textContent = trans["User ID"];
+                                row.insertCell().textContent = `$${trans["Amount"].toFixed(2)}`;
+                                row.insertCell().textContent = trans["Country"];
+                                row.insertCell().textContent = trans["Payment Method"];
+                                row.insertCell().textContent = trans["Risk Score"];
+                                row.insertCell().textContent = trans["Scaled Features"]; // Display scaled features
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching dashboard data:', error);
+                    });
+            };
+
+            fetchData();
+            // Removed: setInterval(fetchData, 5000);
+        });
+    </script>
+
+</body>
+</html>
