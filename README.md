@@ -98,3 +98,4 @@ uvicorn app.main:app --reload
 - **Dashboard:** Open your web browser and navigate to `http://localhost:8000`
 - **API Docs:** The API documentation is available at `http://localhost:8000/docs`
 "# ProactivePaymentFraudDetection" 
+"# PaymentFruadDetection" 
