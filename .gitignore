@@ -20,5 +20,5 @@ env/
 *.log
 *.db
 
-# ML models
-app/ml/models/
+# ML models - We are now checking in the models for this project
+# app/ml/models/

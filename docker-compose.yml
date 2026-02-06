@@ -18,7 +18,8 @@ services:
       MONGO_DB: honeypot_db
       # MONGO_USER and MONGO_PASSWORD removed for local development
       RISK_THRESHOLD: 0.7
-      ML_MODEL_PATH: /app/app/ml/models/fraud_model.pkl
+      ML_MODEL_PATH: /app/fraud_model.pkl
+      SCALER_PATH: /app/scaler.pkl
     depends_on:
       - mysql
       - mongodb

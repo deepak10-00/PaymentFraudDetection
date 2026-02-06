@@ -31,13 +31,13 @@ async def process_transaction(transaction: Transaction):
     print(f"Received transaction for processing: {transaction.transaction_id}")
 
     # 1. Risk Analysis now returns score, explanations, AND scaled_features
-    risk_score, explanations, scaled_features = r_analyzer.analyze_transaction(transaction.dict())
+    risk_score, explanations, scaled_features = r_analyzer.analyze_transaction(transaction.model_dump())
     print(f"Transaction {transaction.transaction_id} risk score: {risk_score}")
 
     if risk_score > settings.RISK_THRESHOLD:
         print(f"Transaction {transaction.transaction_id} deemed suspicious. Diverting to honeypot.")
         # Pass scaled_features to honeypot for logging
-        honeypot_result = h_gateway.process_transaction(transaction.dict(), scaled_features)
+        honeypot_result = h_gateway.process_transaction(transaction.model_dump(), scaled_features)
         # Include the new explanations in the response
         return {
             "status": "diverted_to_honeypot",
@@ -51,7 +51,7 @@ async def process_transaction(transaction: Transaction):
         save_legitimate_transaction(transaction, risk_score, scaled_features)
 
         # Process with the simulated payment gateway
-        payment_confirmation = p_gateway.process_payment(transaction.dict())
+        payment_confirmation = p_gateway.process_payment(transaction.model_dump())
 
         return {
             "status": "processed_legitimately",

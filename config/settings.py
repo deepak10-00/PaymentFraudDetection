@@ -22,7 +22,8 @@ class Settings:
 
     # Risk Analysis Engine settings
     RISK_THRESHOLD: float = float(os.getenv("RISK_THRESHOLD", 0.7))
-    ML_MODEL_PATH: str = os.getenv("ML_MODEL_PATH", "./fraud_model.pkl") # Corrected path
-    SCALER_PATH: str = os.getenv("SCALER_PATH", "./scaler.pkl") # Corrected path
+    # Correct paths for the model and scaler files at the project root
+    ML_MODEL_PATH: str = os.getenv("ML_MODEL_PATH", "fraud_model.pkl")
+    SCALER_PATH: str = os.getenv("SCALER_PATH", "scaler.pkl")
 
 settings = Settings()

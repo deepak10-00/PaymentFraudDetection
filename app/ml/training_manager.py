@@ -2,6 +2,7 @@ import numpy as np
 import joblib # Import joblib
 from sklearn.preprocessing import StandardScaler # Import StandardScaler
 from typing import List, Dict, Any, Tuple
+import json
 
 from app.database.crud import get_all_legitimate_transactions, get_all_honeypot_logs
 from app.ml.risk_analyzer import RiskAnalyzer
@@ -24,10 +25,14 @@ class TrainingManager:
 
         # 2. Process legitimate transactions (label = 0)
         for trans in legit_transactions:
-            # Use the RiskAnalyzer's own preprocessing method to ensure consistency
-            feature_vector = self.risk_analyzer._preprocess_transaction_data(trans)
-            features.append(feature_vector[0]) # .reshape returns a 2D array, we need the 1D vector
-            labels.append(0) # 0 for legitimate
+            # The transaction data is in the 'details' column as a JSON string
+            try:
+                details = json.loads(trans['details'])
+                feature_vector = self.risk_analyzer._preprocess_transaction_data(details)
+                features.append(feature_vector[0])
+                labels.append(0) # 0 for legitimate
+            except (json.JSONDecodeError, KeyError):
+                continue
 
         # 3. Process fraudulent transactions from honeypot (label = 1)
         for log in honeypot_logs:

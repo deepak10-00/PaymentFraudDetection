@@ -2,11 +2,12 @@ from flask import Blueprint, request, jsonify
 import json
 from app.risk_analysis.engine import RiskAnalysisEngine
 from app.honeypot.gateway import HoneypotGateway
-from app.database.db import get_mysql_db
+from app.database.db import get_mysql_db, get_mongo_db
+from bson import json_util
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 # --- Configuration ---
-# This threshold determines which transactions are diverted to the honeypot.
-# We've raised it from 0.5 to 0.75 to reduce false positives on legitimate transactions.
 HIGH_RISK_THRESHOLD = 0.75
 
 # --- Initialization ---
@@ -19,38 +20,175 @@ honeypot_gateway = HoneypotGateway()
 def handle_transaction():
     """
     This is the core endpoint for processing transactions.
-    It implements the proactive honeypot-based fraud detection logic.
+    It now passes the full transaction data to the risk analysis engine.
     """
     transaction_data = request.get_json()
     if not transaction_data:
         return jsonify({"error": "Invalid JSON"}), 400
 
-    # 1. Risk Analysis: Every transaction is first analyzed by the ML engine.
-    risk_score = risk_engine.analyze(transaction_data)
+    # The risk engine now expects the full transaction dictionary.
+    risk_score, explanations, _ = risk_engine.analyze_transaction(transaction_data)
 
-    # 2. Intelligent Diversion:
     if risk_score > HIGH_RISK_THRESHOLD:
-        # HIGH-RISK: The transaction is suspicious.
-        # - Log the attacker's activity in the honeypot for intelligence gathering.
-        # - Return a generic "declined" message to deceive the attacker.
         print(f"High-risk transaction detected (Score: {risk_score:.2f}). Diverting to honeypot.")
+        # Add explanations to the logged data for better context.
+        transaction_data['risk_score'] = risk_score
+        transaction_data['explanations'] = explanations
         honeypot_gateway.log_activity(transaction_data)
-        return jsonify({"status": "error", "message": "Transaction declined"}), 400
+        return jsonify({"status": "error", "message": "Transaction declined", "reason": explanations}), 400
     else:
-        # LOW-RISK: The transaction is considered legitimate.
-        # - Process the payment normally.
-        # - Log the successful transaction in the main database.
         print(f"Legitimate transaction processed (Score: {risk_score:.2f}).")
         try:
             conn = get_mysql_db()
             with conn.cursor() as cursor:
+                # Storing more details about the legitimate transaction.
                 sql = "INSERT INTO transactions (is_fraud, amount, details) VALUES (%s, %s, %s)"
-                # We log 'is_fraud' as False since it passed the check
-                cursor.execute(sql, (False, transaction_data.get('Amount'), json.dumps(transaction_data)))
+                # Ensure 'Amount' is correctly retrieved or defaulted.
+                amount = transaction_data.get('Amount', 0.0)
+                details = json.dumps(transaction_data)
+                cursor.execute(sql, (False, amount, details))
             conn.commit()
+        finally:
             conn.close()
-        except Exception as e:
-            # If logging fails, the user's transaction should still succeed.
-            print(f"Error logging legitimate transaction to MySQL: {e}")
 
         return jsonify({"status": "success", "message": "Transaction successful"})
+
+@api_blueprint.route('/dashboard_data', methods=['GET'])
+def get_dashboard_data():
+    """
+    This endpoint provides the data needed for the main dashboard.
+    It now uses a consistent filter for suspicious transactions to match the analytics page.
+    """
+    try:
+        mongo_db = get_mongo_db()
+        honeypot_collection = mongo_db['suspicious_transactions']
+        
+        # Use the same filter as the analytics page for consistency.
+        valid_suspicious_filter = {
+            "$or": [
+                {"Timestamp": {"$type": "date"}},
+                {"_id": {"$ne": None}}
+            ]
+        }
+        
+        # Count only the valid, analyzable suspicious transactions.
+        total_suspicious = honeypot_collection.count_documents(valid_suspicious_filter)
+        
+        # The list of recent logs can still show all recent attempts.
+        honeypot_logs = list(honeypot_collection.find().sort("_id", -1).limit(50))
+        honeypot_logs_json = json.loads(json_util.dumps(honeypot_logs))
+
+        # --- Legitimate Transactions (MySQL) ---
+        mysql_conn = get_mysql_db()
+        total_legitimate = 0
+        legitimate_transactions = []
+        try:
+            with mysql_conn.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) FROM transactions WHERE is_fraud = 0")
+                result = cursor.fetchone()
+                if result:
+                    total_legitimate = result[0]
+            
+            with mysql_conn.cursor(dictionary=True) as cursor:
+                sql = "SELECT * FROM transactions WHERE is_fraud = 0 ORDER BY timestamp DESC LIMIT 50"
+                cursor.execute(sql)
+                legitimate_transactions = cursor.fetchall()
+        finally:
+            mysql_conn.close()
+
+        # --- Summary Calculation ---
+        total_transactions = total_suspicious + total_legitimate
+        fraud_percentage = (total_suspicious / total_transactions * 100) if total_transactions > 0 else 0
+
+        dashboard_data = {
+            "summary": {
+                "total_suspicious": total_suspicious,
+                "total_legitimate": total_legitimate,
+                "fraud_percentage": f"{fraud_percentage:.2f}%"
+            },
+            "honeypot_logs": honeypot_logs_json,
+            "legitimate_transactions": legitimate_transactions
+        }
+        
+        return jsonify(dashboard_data), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to retrieve dashboard data: {e}"}), 500
+
+@api_blueprint.route('/analytics_data', methods=['GET'])
+def get_analytics_data():
+    """
+    This endpoint provides aggregated data for the analytics dashboard.
+    It now robustly handles historical data that may be missing the 'Timestamp' field
+    by using the record's creation time as a fallback.
+    """
+    try:
+        mongo_db = get_mongo_db()
+        honeypot_collection = mongo_db['suspicious_transactions']
+
+        # Time series analysis: Use the '_id' creation time as a fallback for missing Timestamps.
+        hourly_counts_agg = list(honeypot_collection.aggregate([
+            {
+                "$project": {
+                    "activity_time": {
+                        "$ifNull": ["$Timestamp", {"$toDate": "$_id"}]
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": {"hour": {"$hour": "$activity_time"}},
+                    "count": {"$sum": 1}
+                }
+            }
+        ]))
+        hourly_counts_map = {item['_id']['hour']: item['count'] for item in hourly_counts_agg}
+        hour_labels = [f"{h}:00" for h in range(24)]
+        time_series_data = [hourly_counts_map.get(h, 0) for h in range(24)]
+
+        # Geographic analysis
+        country_breakdown = list(honeypot_collection.aggregate([
+            {"$match": {"Country": {"$exists": True, "$ne": None}}},
+            {"$group": {"_id": "$Country", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]))
+
+        # KPI: Top Attacker IP
+        top_ip_agg = list(honeypot_collection.aggregate([
+            {"$match": {"Attacker IP": {"$exists": True, "$ne": None}}},
+            {"$group": {"_id": "$Attacker IP", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 1}
+        ]))
+        top_attacker_ip = top_ip_agg[0]['_id'] if top_ip_agg else 'N/A'
+
+        # KPI: Peak Fraud Time
+        peak_fraud_time = 'N/A'
+        if hourly_counts_map:
+            peak_hour = max(hourly_counts_map, key=hourly_counts_map.get)
+            peak_fraud_time = f"{peak_hour}:00"
+
+        # KPI: Most Attacked Country
+        most_attacked_country = country_breakdown[0]['_id'] if country_breakdown else 'N/A'
+
+        analytics_data = {
+            "kpis": {
+                "top_attacker_ip": top_attacker_ip,
+                "peak_fraud_time": peak_fraud_time,
+                "most_attacked_country": most_attacked_country
+            },
+            "time_series": {
+                "labels": hour_labels,
+                "data": time_series_data
+            },
+            "geo_breakdown": {
+                "labels": [c['_id'] for c in country_breakdown],
+                "data": [c['count'] for c in country_breakdown]
+            }
+        }
+        print(f"Analytics Data: {analytics_data}")
+        return jsonify(analytics_data), 200
+
+    except Exception as e:
+        print(f"CRITICAL Error in get_analytics_data: {e}")
+        return jsonify({"error": f"Failed to retrieve analytics data: {e}"}), 500

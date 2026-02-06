@@ -1,30 +1,29 @@
-import pandas as pd
+import joblib
+import numpy as np
+import os
+from app.ml.risk_analyzer import RiskAnalyzer
 
 class RiskAnalysisEngine:
-    def __init__(self):
+    def __init__(self, model_path='fraud_model.pkl', scaler_path='scaler.pkl'):
         """
-        This is a SIMULATED engine. It does not use a real ML model.
-        It is designed to demonstrate the project's architecture even with a flawed dataset.
+        Initializes the risk analysis engine by creating an instance of the RiskAnalyzer.
         """
-        print("--- Using SIMULATED Risk Analysis Engine ---")
-        pass
+        print("--- Initializing Real Risk Analysis Engine ---")
+        # The RiskAnalyzer class now encapsulates all the ML logic.
+        self.analyzer = RiskAnalyzer()
 
     def analyze(self, transaction_data):
         """
-        Simulates a risk score based on the transaction amount.
-        - Amount > 1000 is considered high-risk.
-        - Amount <= 1000 is considered low-risk.
+        Analyzes a transaction by delegating to the RiskAnalyzer instance.
         """
         try:
-            amount = float(transaction_data.get('Amount', 0.0))
+            # The analyze_transaction method returns the score, explanations, and features.
+            risk_score, _, _ = self.analyzer.analyze_transaction(transaction_data)
             
-            if amount > 1000.0:
-                print(f"SIMULATED: High-risk amount detected (${amount}).")
-                return 0.9  # High risk score
-            else:
-                print(f"SIMULATED: Low-risk amount detected (${amount}).")
-                return 0.1  # Low risk score
+            print(f"Analyzed transaction. Risk score: {risk_score:.4f}")
+            return risk_score
 
         except Exception as e:
-            print(f"Error during simulated analysis: {e}")
-            return 1.0 # Default to high risk on error
+            print(f"Error during real analysis: {e}")
+            # Default to a high-risk score to be safe in case of errors.
+            return 1.0

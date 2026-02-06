@@ -2,6 +2,7 @@ from app.database.db import get_mysql_db, get_mongo_db
 from app.schemas import Transaction
 from typing import List, Dict, Any
 import json # Import the json module
+from datetime import datetime
 
 def save_legitimate_transaction(transaction: Transaction, risk_score: float, scaled_features: List[float]):
     """Saves a legitimate transaction to the MySQL database."""
@@ -9,7 +10,10 @@ def save_legitimate_transaction(transaction: Transaction, risk_score: float, sca
     try:
         db_conn = get_mysql_db()
         with db_conn.cursor() as cursor:
-            mysql_timestamp = transaction.timestamp.replace('T', ' ').replace('Z', '')
+            # Convert the 'Time' field (seconds since an epoch) to a datetime object
+            # This is a placeholder conversion; in a real system, you'd have a proper timestamp.
+            mysql_timestamp = datetime.utcfromtimestamp(transaction.Time).strftime('%Y-%m-%d %H:%M:%S')
+            
             scaled_features_json = json.dumps(scaled_features) # Convert list to JSON string
 
             sql = """INSERT INTO transactions 
@@ -18,10 +22,10 @@ def save_legitimate_transaction(transaction: Transaction, risk_score: float, sca
             cursor.execute(sql, (
                 transaction.transaction_id,
                 transaction.user_id,
-                transaction.amount,
-                transaction.currency,
-                transaction.payment_method,
-                transaction.country,
+                transaction.Amount, # Use Amount from the model
+                "USD", # Currency is not in the model, so we hardcode it
+                "credit_card", # Payment method is not in the model, so we hardcode it
+                "US", # Country is not in the model, so we hardcode it
                 mysql_timestamp,
                 risk_score,
                 scaled_features_json # Store the JSON string

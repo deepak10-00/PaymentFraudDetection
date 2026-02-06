@@ -48,7 +48,7 @@ class HoneypotGateway:
         intelligence = self._gather_intelligence(transaction_data)
 
         log_entry = {
-            "timestamp": datetime.datetime.now().isoformat(),
+            "timestamp": datetime.datetime.utcnow(),
             "transaction_data": transaction_data,
             "simulated_response": simulated_response,
             "intelligence_gathered": intelligence,

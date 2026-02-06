@@ -4,98 +4,98 @@ This project is a full-stack web application that demonstrates a proactive appro
 
 ## Core Features
 
-- **Transaction Processing:** An API endpoint to receive and process new payment transactions.
-- **Risk Analysis with ML:** A machine learning model (Logistic Regression) that analyzes transaction data in real-time to produce a fraud risk score.
-- **Honeypot Diversion:** An intelligent system that automatically diverts high-risk transactions to a honeypot gateway, protecting the main system and deceiving attackers.
-- **Database Logging (MySQL & MongoDB):**
-    - Legitimate transactions are logged to a **MySQL** database for clean, structured record-keeping.
-    - Fraudulent attempts diverted to the honeypot are logged in rich detail to a **MongoDB** database for analysis.
-- **Model Retraining:** A continuous improvement feedback loop via an API endpoint that retrains the ML model using the latest data from both databases.
-- **Risk Explanations:** The system provides clear, human-readable reasons why a transaction was flagged as high-risk.
-- **Interactive Filtering:** A dynamic, professional web dashboard that allows for live monitoring and interactive filtering of both legitimate and fraudulent transaction data.
+- **Real-Time Transaction Analysis:** A FastAPI-based API endpoint that processes payment transactions in real-time.
+- **ML-Powered Risk Scoring:** A Logistic Regression model trained on real-world data to assign a fraud risk score to each transaction.
+- **Honeypot Diversion:** High-risk transactions are automatically diverted to a honeypot, protecting the core system while gathering data on attack patterns.
+- **Dual-Database Architecture:**
+    - **MySQL:** Stores all legitimate transaction records.
+    - **MongoDB:** Logs all suspicious activity diverted to the honeypot for detailed analysis.
+- **Dashboard & Analytics:** A clean, professional web interface for monitoring system activity, viewing transaction lists, and exploring analytics on fraudulent trends.
+- **Containerized Deployment:** The entire application stack is containerized with Docker and managed with Docker Compose for easy, consistent deployment.
 
 ## Technical Architecture
 
-- **Backend:** Built with **FastAPI**, providing a high-performance API.
-- **Machine Learning:** Implemented using **Scikit-learn** for model training and prediction.
+- **Backend:** **FastAPI** (a modern, fast (high-performance) web framework for building APIs with Python 3.7+ based on standard Python type hints).
+- **Machine Learning:** **Scikit-learn** for model training and real-time predictions.
 - **Databases:** 
-    - **MySQL:** For storing structured data of legitimate transactions.
-    - **MongoDB:** For storing unstructured honeypot logs and intelligence.
-- **Frontend:** A dynamic, single-page application built with vanilla **HTML, CSS, and JavaScript**, enhanced with **Bootstrap** for layout, **Chart.js** for data visualization, and **Feather Icons** for a professional UI.
-- **Testing:** The backend includes a suite of automated tests written with **Pytest**.
+    - **MySQL 8.0** for structured transaction data.
+    - **MongoDB 5.0** for flexible, unstructured honeypot logs.
+- **Frontend:** A responsive single-page application built with vanilla **HTML, CSS, and JavaScript**, using **Chart.js** for data visualization.
+- **Containerization:** **Docker** and **Docker Compose**.
 
-## How to Run Locally
+## How to Run with Docker (Recommended)
+
+This is the simplest and most reliable way to run the entire application stack.
 
 ### 1. Prerequisites
 
-- **Python 3.9+** installed and added to your PATH.
-- **MySQL Community Server** installed and running.
-- **MongoDB Community Server** installed and running as a service.
+- **Docker** and **Docker Compose** installed and running on your machine.
+
+### 2. Build and Run the Application
+
+From the project's root directory, run the following command:
+
+```sh
+docker-compose up --build
+```
+
+This command will:
+1. Build the Docker image for the FastAPI application.
+2. Start containers for the FastAPI app, MySQL database, and MongoDB database.
+3. Initialize the MySQL database using the `db/init.sql` script.
+
+### 3. Access the Application
+
+- **Web Dashboard:** Open your browser and go to `http://localhost:8000`
+- **API Docs:** The API documentation is available at `http://localhost:8000/docs`
+- **API Testing:** Use the provided `test_api.http` file in an IDE like VS Code (with the REST Client extension) to send test transactions to `http://localhost:8000/api/process_transaction`.
+
+## Local Development (Without Docker)
+
+### 1. Prerequisites
+
+- Python 3.9+
+- MySQL Server
+- MongoDB Server
 
 ### 2. Database Setup
 
-Open the MySQL Command Line Client and run the following commands to set up the database and user:
+1. **MySQL:**
+   - Ensure your MySQL server is running.
+   - Create a database named `fraud_detection_db`.
+   - Create a user `fraud_user` with the password `mysecretpassword123` and grant it all privileges on the database.
+   - Run the script in `db/init.sql` to create the `transactions` table.
 
-```sql
--- Create the database
-CREATE DATABASE fraud_detection_db;
-
--- Create a dedicated user and set its password
-CREATE USER 'fraud_user'@'localhost' IDENTIFIED BY 'mysecretpassword123';
-
--- Grant the user permissions on the new database
-GRANT ALL PRIVILEGES ON fraud_detection_db.* TO 'fraud_user'@'localhost';
-
--- Use the database
-USE fraud_detection_db;
-
--- Create the transactions table
-CREATE TABLE transactions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    transaction_id VARCHAR(255) NOT NULL UNIQUE,
-    user_id VARCHAR(255) NOT NULL,
-    amount DECIMAL(10, 2) NOT NULL,
-    currency VARCHAR(10) NOT NULL,
-    payment_method VARCHAR(50),
-    country VARCHAR(10),
-    transaction_timestamp DATETIME NOT NULL,
-    risk_score FLOAT,
-    status VARCHAR(50) DEFAULT 'processed_legitimately',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+2. **MongoDB:**
+   - Ensure your MongoDB server is running on its default port (27017). No authentication is required for local setup.
 
 ### 3. Environment Setup
 
-Navigate to the project's root directory (`D:\proactive`) in your terminal and run the following commands:
+From the project root:
 
 ```sh
-# Create a Python virtual environment
-python -m venv venv
+# Create and activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
 
-# Activate the virtual environment
-.\venv\Scripts\activate
-```
-
-### 4. Install Dependencies
-
-With the virtual environment active, install all required Python packages:
-
-```sh
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 5. Run the Application
+### 4. Train the Model
 
-Start the FastAPI server with auto-reload enabled:
+Before running the app, you must train the ML model using the provided dataset:
+
+```sh
+python train_model.py
+```
+
+This will generate `fraud_model.pkl` and `scaler.pkl` in the project root.
+
+### 5. Run the Application
 
 ```sh
 uvicorn app.main:app --reload
 ```
 
-### 6. Access the Application
-
-- **Dashboard:** Open your web browser and navigate to `http://localhost:8000`
-- **API Docs:** The API documentation is available at `http://localhost:8000/docs`
-"# ProactivePaymentFraudDetection" 
-"# PaymentFruadDetection" 
+The application will be available at `http://127.0.0.1:8000`.
