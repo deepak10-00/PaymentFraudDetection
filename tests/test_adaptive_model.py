@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from app.ml.risk_analyzer import RiskAnalyzer
+from app.ml.adaptive_model import AdaptiveMLModel
 
 # Sample payload for a legitimate transaction (based on creditcard.csv 'Class' 0)
 legit_payload = {
@@ -21,17 +21,17 @@ fraud_payload = {
 }
 
 @pytest.fixture(scope="module")
-def analyzer() -> RiskAnalyzer:
-    """Provides a single RiskAnalyzer instance for all tests in this module."""
-    return RiskAnalyzer()
+def analyzer() -> AdaptiveMLModel:
+    """Provides a single AdaptiveMLModel instance for all tests in this module."""
+    return AdaptiveMLModel()
 
-def test_risk_analyzer_initialization(analyzer: RiskAnalyzer):
+def test_risk_analyzer_initialization(analyzer: AdaptiveMLModel):
     """Tests that the analyzer and its components (model, scaler) are loaded."""
     assert analyzer is not None
     assert analyzer.model is not None
     assert analyzer.scaler is not None
 
-def test_preprocess_transaction_data(analyzer: RiskAnalyzer):
+def test_preprocess_transaction_data(analyzer: AdaptiveMLModel):
     """Tests the feature preparation logic to ensure it matches the training format."""
     features = analyzer._preprocess_transaction_data(legit_payload)
     
@@ -42,7 +42,7 @@ def test_preprocess_transaction_data(analyzer: RiskAnalyzer):
     # Check that the 'Amount' is the last feature, as per the training script
     assert features[0, -1] == legit_payload["Amount"]
 
-def test_analyze_legitimate_transaction(analyzer: RiskAnalyzer):
+def test_analyze_legitimate_transaction(analyzer: AdaptiveMLModel):
     """Tests that a known legitimate transaction yields a low risk score."""
     risk_score, explanations, _ = analyzer.analyze_transaction(legit_payload)
     
@@ -51,7 +51,7 @@ def test_analyze_legitimate_transaction(analyzer: RiskAnalyzer):
     assert isinstance(explanations, list)
     assert len(explanations) == 0 # No explanations for low-risk transactions
 
-def test_analyze_fraudulent_transaction(analyzer: RiskAnalyzer):
+def test_analyze_fraudulent_transaction(analyzer: AdaptiveMLModel):
     """Tests that a known fraudulent transaction yields a high risk score."""
     risk_score, explanations, _ = analyzer.analyze_transaction(fraud_payload)
     

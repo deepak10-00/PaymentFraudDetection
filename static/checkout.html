@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudShield - Checkout Simulation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/razorpay.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <h1>FraudShield</h1>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="/" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Dashboard Overview</span>
+            </a></li>
+            <li><a href="/analytics.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                <span>Deep Analytics</span>
+            </a></li>
+            <li><a href="/checkout" class="nav-item active">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <span>Payment Gateway Demo</span>
+            </a></li>
+        </ul>
+    </div>
+    <div class="main-wrapper">
+        <nav class="top-navbar">
+            <div class="page-title">
+                <h2>Payment Gateway Demo</h2>
+                <p>Test the Razorpay integration and honeypot diversion locally.</p>
+            </div>
+        </nav>
+        <div class="checkout-wrapper">
+            <div class="checkout-box glass-panel animate-up">
+                <h2>Complete Your Purchase</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">Test the FraudShield integration with a mock transaction.</p>
+                
+                <div class="amount-display" style="display: flex; justify-content: center; align-items: baseline; gap: 4px;">
+                    <span style="color: var(--text-secondary); font-size: 0.6em;">₹</span>
+                    <input type="number" id="custom-amount" value="68.99" step="0.01" style="background: transparent; border: none; border-bottom: 2px dashed rgba(255,255,255,0.2); color: var(--accent-green); font-family: inherit; font-size: inherit; font-weight: inherit; width: 140px; text-align: center; outline: none; transition: border-color 0.2s;">
+                </div>
+                <style>
+                    #custom-amount:focus { border-bottom-color: var(--accent-green) !important; }
+                    #custom-amount::-webkit-inner-spin-button, #custom-amount::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+                </style>
+                
+                <div class="method-selection" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                    <div class="method-card active" data-method="credit_card">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                        <span>Card</span>
+                    </div>
+                    <div class="method-card" data-method="upi">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                        <span>UPI</span>
+                    </div>
+                    <div class="method-card" data-method="netbanking">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="7" x2="22" y2="7"></line><line x1="12" y1="21" x2="12" y2="17"></line><line x1="7" y1="21" x2="17" y2="21"></line></svg>
+                        <span>Banking</span>
+                    </div>
+                </div>
+
+                <style>
+                    .method-card {
+                        background: rgba(255,255,255,0.03);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 12px;
+                        padding: 12px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 8px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        color: var(--text-secondary);
+                    }
+                    .method-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2); }
+                    .method-card.active {
+                        background: rgba(59, 130, 246, 0.1);
+                        border-color: var(--accent-blue);
+                        color: #fff;
+                        box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+                    }
+                    .method-card span { font-size: 0.8em; font-weight: 600; text-transform: uppercase; }
+                </style>
+
+                <div class="checkbox-container" style="text-align: left; margin-bottom: 24px;">
+                    <label class="checkbox-label" for="simulate-fraud">
+                        <input type="checkbox" id="simulate-fraud">
+                        Simulate a fraudulent transaction
+                    </label>
+                </div>
+
+                <div id="card-form-container" class="custom-card-form" style="margin-top: 20px; text-align: left;">
+                    <h3 style="margin-bottom: 16px; font-size: 1.1em; color: var(--text-primary); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">Payment Details</h3>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 0.85em; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500;">Cardholder Name</label>
+                        <input type="text" id="card-name" value="Test User" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary); outline: none; transition: all 0.3s ease;">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 0.85em; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500;">Card Number</label>
+                        <input type="text" id="card-number" placeholder="4111 1111 1111 1111" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary); outline: none; transition: all 0.3s ease; letter-spacing: 1px;">
+                    </div>
+                    <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 0.85em; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500;">Expiry (MM/YY)</label>
+                            <input type="text" id="card-expiry" placeholder="12/25" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary); outline: none; transition: all 0.3s ease;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 0.85em; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500;">CVV</label>
+                            <input type="password" id="card-cvv" placeholder="123" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary); outline: none; transition: all 0.3s ease;">
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                    .custom-card-form input:focus {
+                        border-color: var(--accent-blue);
+                        background: rgba(255,255,255,0.06) !important;
+                        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                    }
+                </style>
+
+                <button id="pay-button" class="btn-primary" style="width: 100%; margin-top: 8px;">Process Payment Securely</button>
+                <div id="status-message" class="status-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const checkbox = document.getElementById('simulate-fraud');
+        const amountInput = document.getElementById('custom-amount');
+        const btn = document.getElementById('pay-button');
+        const statusDiv = document.getElementById('status-message');
+        const cardForm = document.getElementById('card-form-container');
+        const methodCards = document.querySelectorAll('.method-card');
+        
+        let selectedMethod = 'credit_card';
+
+        methodCards.forEach(card => {
+            card.onclick = () => {
+                methodCards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                selectedMethod = card.dataset.method;
+                
+                if (selectedMethod === 'credit_card') {
+                    cardForm.style.display = 'block';
+                } else {
+                    cardForm.style.display = 'none';
+                }
+            };
+        });
+        
+        let simulatedTransaction = null;
+
+        async function loadRealData() {
+            btn.disabled = true;
+            btn.textContent = 'Loading Dataset...';
+            statusDiv.textContent = 'Fetching real record from creditcard.csv...';
+            statusDiv.className = 'status-message';
+            
+            try {
+                const isFraud = checkbox.checked;
+                const response = await fetch(`/api/sample_transaction?is_fraud=${isFraud}`);
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error);
+                
+                simulatedTransaction = data;
+                simulatedTransaction.transaction_id = "txn_" + Math.random().toString(36).substr(2, 9);
+                simulatedTransaction.user_id = "user_" + Math.floor(Math.random() * 1000);
+                
+                if (isFraud) {
+                    simulatedTransaction.country = ["RU", "CN", "BR", "NG", "VN"][Math.floor(Math.random() * 5)];
+                    simulatedTransaction.state = ["State-A", "State-B", "State-C"][Math.floor(Math.random() * 3)];
+                    simulatedTransaction.city = ["City-X", "City-Y", "City-Z"][Math.floor(Math.random() * 3)];
+                    simulatedTransaction.payment_method = "stolen_credit_card";
+                } else {
+                    simulatedTransaction.country = "US";
+                    simulatedTransaction.state = "NY";
+                    simulatedTransaction.city = "New York";
+                    simulatedTransaction.payment_method = selectedMethod;
+                }
+                
+                // Keep the dynamic display in sync with the live data row's exact amount
+                amountInput.value = (Math.round(data.Amount * 100) / 100).toFixed(2);
+                
+                btn.disabled = false;
+                btn.textContent = 'Pay Now';
+                statusDiv.textContent = 'Dataset row loaded and ready for simulation.';
+                statusDiv.className = 'status-message';
+            } catch (err) {
+                console.error(err);
+                statusDiv.textContent = 'Failed to load dataset: ' + err.message;
+                statusDiv.className = 'status-message error';
+            }
+        }
+
+        checkbox.addEventListener('change', loadRealData);
+        window.addEventListener('DOMContentLoaded', loadRealData);
+
+        btn.onclick = async function (e) {
+            e.preventDefault();
+            
+            if (!simulatedTransaction) return;
+            
+            const isFraud = checkbox.checked;
+            
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+            statusDiv.textContent = 'Analyzing transaction risk...';
+            statusDiv.className = 'status-message';
+
+            // Override the dataset's static Amount with the exact value from the UI input
+            const userAmount = parseFloat(amountInput.value);
+            if (isNaN(userAmount) || userAmount <= 0) {
+                statusDiv.textContent = 'Please enter a valid positive amount.';
+                statusDiv.className = 'status-message error';
+                btn.disabled = false;
+                btn.textContent = 'Try Again';
+                return;
+            }
+            simulatedTransaction.Amount = userAmount;
+            simulatedTransaction.payment_method = selectedMethod;
+
+            // By default, our random mock data looks like Anamoly/Fraud. 
+            // In order to bypass the honeypot and hit the Razorpay Gateway, we need to send "normal" data.
+            // Using small V features typically passes LogisticRegression models trained on fraud data.
+            try {
+                // Step 1: Send to our backend for fraud analysis & Order creation
+                const response = await fetch('/api/process_transaction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(simulatedTransaction)
+                });
+                
+                const data = await response.json();
+
+                if (data.status === 'diverted_to_honeypot') {
+                    statusDiv.textContent = 'Transaction flagged as high-risk and diverted. Payment cannot proceed.';
+                    statusDiv.className = 'status-message error';
+                    btn.textContent = 'Payment Blocked';
+                    return;
+                }
+
+                if (data.status === 'processed_legitimately' && data.payment_confirmation.status === 'success') {
+                    const orderId = data.payment_confirmation.confirmation_id;
+                    statusDiv.textContent = 'Risk check passed. Launching payment gateway...';
+
+                    // Fetch Razorpay key from backend config (you can also just embed the test key manually here for sandbox)
+                    // For security we typically get it from the backend, but for this demo frontend we need it.
+                    // IMPORTANT: Replace this hardcoded string with the same Test Key ID you put in docker-compose
+                    const razorpayKeyId = "rzp_test_SPNsgLxU74TfVI";
+
+                    // Step 2: Initialize Razorpay Checkout
+                    var options = {
+                        "key": razorpayKeyId, // Enter the Key ID generated from the Dashboard
+                        "amount": Math.round(simulatedTransaction.Amount * 100),      // Pass dynamically determined subunits
+                        "currency": "INR",
+                        "name": "FraudShield Demo Store",
+                        "description": "Test Transaction",
+                        "order_id": orderId, // This is the order ID generated by backend Razorpay client
+                        "handler": async function (response){
+                            // Handle successful payment
+                            statusDiv.textContent = 'Payment successful! Payment ID: ' + response.razorpay_payment_id + '. Saving transaction...';
+                            
+                            try {
+                                const confirmResponse = await fetch('/api/confirm_transaction', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        transaction: simulatedTransaction,
+                                        risk_score: data.risk_score,
+                                        scaled_features: data.scaled_features
+                                    })
+                                });
+                                
+                                if (confirmResponse.ok) {
+                                    statusDiv.textContent = 'Payment successful and transaction securely saved!';
+                                    statusDiv.className = 'status-message success';
+                                    btn.textContent = 'Paid';
+                                } else {
+                                    throw new Error('Failed to save transaction to database');
+                                }
+                            } catch (err) {
+                                console.error('Confirmation Error:', err);
+                                statusDiv.textContent = 'Payment successful, but failed to log transaction: ' + err.message;
+                                statusDiv.className = 'status-message error';
+                            }
+                        },
+                        "prefill": {
+                            "name": "Test User",
+                            "email": "test@example.com",
+                            "contact": "9999999999"
+                        },
+                        "theme": {
+                            "color": "#3b82f6"
+                        }
+                    };
+                    
+                    var rzp1 = new Razorpay(options);
+                    rzp1.on('payment.failed', async function (response){
+                        statusDiv.textContent = 'Payment failed: ' + response.error.description;
+                        statusDiv.className = 'status-message error';
+                        btn.disabled = false;
+                        btn.textContent = 'Try Again';
+
+                        try {
+                            await fetch('/api/log_failed_payment', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    transaction: simulatedTransaction,
+                                    error_details: response.error,
+                                    order_id: orderId
+                                })
+                            });
+                        } catch (err) {
+                            console.error('Failed to log failed payment to backend:', err);
+                        }
+                    });
+                    
+                    if (selectedMethod === 'credit_card') {
+                        const expiry = document.getElementById('card-expiry').value.split('/');
+                        const expiryMonth = expiry[0] ? expiry[0].trim() : '';
+                        const expiryYear = expiry[1] ? expiry[1].trim() : '';
+
+                    // Map our internal method name to Razorpay's expected internal name
+                    const rzpMethod = selectedMethod === 'credit_card' ? 'card' : selectedMethod;
+                    console.log(`Initialising Razorpay payment for method: ${rzpMethod}`);
+                    
+                    try {
+                        rzp1.createPayment({
+                            amount: options.amount,
+                            method: rzpMethod,
+                            'card[name]': document.getElementById('card-name').value,
+                            'card[number]': document.getElementById('card-number').value.replace(/\s+/g, ''),
+                            'card[expiry_month]': expiryMonth,
+                            'card[expiry_year]': expiryYear,
+                            'card[cvv]': document.getElementById('card-cvv').value,
+                        });
+                    } catch (error) {
+                        console.error('Razorpay direct payment error:', error);
+                        statusDiv.textContent = 'Failed to initiate card payment: ' + error.message;
+                        statusDiv.className = 'status-message error';
+                        btn.disabled = false;
+                        btn.textContent = 'Try Again';
+                    }
+                    } else {
+                        // For UPI/Netbanking, use the standard modal
+                        rzp1.open();
+                    }
+                } else {
+                    throw new Error(data.message || 'Unknown error during order creation.');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.textContent = 'Error processing transaction: ' + error.message;
+                statusDiv.className = 'status-message error';
+                btn.disabled = false;
+                btn.textContent = 'Try Again';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -26,4 +26,8 @@ class Settings:
     ML_MODEL_PATH: str = os.getenv("ML_MODEL_PATH", "fraud_model.pkl")
     SCALER_PATH: str = os.getenv("SCALER_PATH", "scaler.pkl")
 
+    # --- Razorpay Integration Settings ---
+    RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "rzp_test_SPNsgLxU74TfVI")
+    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "cw3onW0yrcs41Ix83BhG8P9Y")
+
 settings = Settings()

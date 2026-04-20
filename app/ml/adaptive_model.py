@@ -5,7 +5,7 @@ from sklearn.linear_model import LogisticRegression
 from config.settings import settings
 from typing import List, Tuple
 
-class RiskAnalyzer:
+class AdaptiveMLModel:
     # The feature names must match the columns from the training script
     FEATURE_NAMES = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10',
                      'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20',
@@ -90,3 +90,13 @@ class RiskAnalyzer:
             print("ML model and scaler updated successfully.")
         else:
             print(f"Error: New model or scaler file not found.")
+
+    def receive_threat_intelligence(self, intelligence: dict, scaled_features: List[float] = None):
+        """
+        Receives threat intelligence extracted after a transaction is diverted to the honeypot.
+        This provides the feedback loop for the Adaptive ML Model shown in the architecture.
+        """
+        print(f"AdaptiveMLModel received threat intelligence feedback from Honeypot.")
+        print(f"Attacker Actions Identified: {intelligence.get('attempted_actions')}")
+        # In a production system, this method would persist the new data point
+        # to a retrain dataset, or trigger self.model.partial_fit() for online learning.

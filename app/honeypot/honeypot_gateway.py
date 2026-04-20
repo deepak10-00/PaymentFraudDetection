@@ -2,11 +2,15 @@ import datetime
 import random
 from typing import List # Import List
 from app.database.db import get_mongo_db
+from app.threat_intelligence.extractor import ThreatIntelligenceExtractor
+from app.ml.adaptive_model import AdaptiveMLModel
 
 class HoneypotGateway:
     def __init__(self):
         self.db = get_mongo_db()
         self.honeypot_collection = self.db.honeypot_logs
+        self.intelligence_extractor = ThreatIntelligenceExtractor()
+        self.adaptive_ml_model = AdaptiveMLModel()
         print("HoneypotGateway initialized and connected to MongoDB.")
 
     def process_transaction(self, transaction_data: dict, scaled_features: List[float] = None) -> dict:
@@ -45,7 +49,10 @@ class HoneypotGateway:
             "reason": random.choice(failure_reasons)
         }
 
-        intelligence = self._gather_intelligence(transaction_data)
+        intelligence = self.intelligence_extractor.extract_intelligence(transaction_data)
+        
+        # Feedback loop: send intelligence back to Adaptive ML model
+        self.adaptive_ml_model.receive_threat_intelligence(intelligence, scaled_features)
 
         log_entry = {
             "timestamp": datetime.datetime.utcnow(),
@@ -58,44 +65,7 @@ class HoneypotGateway:
 
         return {"status": "diverted_to_honeypot", "transaction_id": transaction_data.get('transaction_id'), "honeypot_info": simulated_response, "intelligence": intelligence}
 
-    def _gather_intelligence(self, transaction_data: dict) -> dict:
-        """
-        Collects information about the attacker's actions within the honeypot.
-        This is a simulated intelligence gathering.
-        """
-        print("Gathering intelligence from honeypot...")
-        
-        # Dynamically generate attacker IP
-        attacker_ip = f"{random.randint(1, 254)}.{random.randint(1, 254)}.{random.randint(1, 254)}.{random.randint(1, 254)}"
 
-        attempted_actions = []
-        # Make actions dynamic based on transaction characteristics
-        if transaction_data.get("amount", 0) > 1000:
-            attempted_actions.append("attempted_high_value_transaction")
-        if transaction_data.get("payment_method") == 'credit_card':
-            attempted_actions.append("attempted_payment_with_credit_card")
-        if random.random() < 0.3: # 30% chance of trying to enumerate accounts
-            attempted_actions.append("tried_to_enumerate_account_details")
-        if random.random() < 0.2: # 20% chance of accessing fake profile
-            attempted_actions.append("accessed_fake_user_profile")
-        if not attempted_actions:
-            attempted_actions.append("generic_suspicious_activity")
-
-        tool_signatures = [
-            random.choice(["fake_card_bruteforcer_v1.0", "generic_phishing_kit_variant_A", "automated_script_v2.1"])
-        ]
-
-        # Simulate device fingerprint
-        device_fingerprint = f"browser_id_{random.randint(10000, 99999)}_os_{random.choice(['Windows', 'Linux', 'MacOS'])}"
-
-        return {
-            "attacker_ip": attacker_ip,
-            "attempted_actions": attempted_actions,
-            "tool_signatures": tool_signatures,
-            "device_fingerprint": device_fingerprint,
-            "transaction_id": transaction_data.get("transaction_id"),
-            "user_id": transaction_data.get("user_id")
-        }
 
     def log_activity(self, activity_data: dict):
         """

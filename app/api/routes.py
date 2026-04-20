@@ -1,19 +1,13 @@
 from flask import Blueprint, request, jsonify
 import json
-from app.risk_analysis.engine import RiskAnalysisEngine
-from app.honeypot.gateway import HoneypotGateway
-from app.database.db import get_mysql_db, get_mongo_db
-from bson import json_util
-from datetime import datetime, timedelta
-from collections import defaultdict
+from app.decision_layer.router import DecisionRouter
 
 # --- Configuration ---
 HIGH_RISK_THRESHOLD = 0.75
 
 # --- Initialization ---
 api_blueprint = Blueprint('api', __name__)
-risk_engine = RiskAnalysisEngine()
-honeypot_gateway = HoneypotGateway()
+decision_router = DecisionRouter()
 
 
 @api_blueprint.route('/transaction', methods=['POST'])
@@ -26,28 +20,25 @@ def handle_transaction():
     if not transaction_data:
         return jsonify({"error": "Invalid JSON"}), 400
 
-    # The risk engine now expects the full transaction dictionary.
-    risk_score, explanations, _ = risk_engine.analyze_transaction(transaction_data)
+    # Use the centralized Decision Layer to route the transaction
+    result = decision_router.route_transaction(transaction_data)
 
-    if risk_score > HIGH_RISK_THRESHOLD:
-        print(f"High-risk transaction detected (Score: {risk_score:.2f}). Diverting to honeypot.")
-        # Add explanations to the logged data for better context.
-        transaction_data['risk_score'] = risk_score
-        transaction_data['explanations'] = explanations
-        honeypot_gateway.log_activity(transaction_data)
-        return jsonify({"status": "error", "message": "Transaction declined", "reason": explanations}), 400
+    if result.get("status") == "diverted_to_honeypot":
+        # Transaction was routed to honeypot
+        return jsonify({"status": "error", "message": "Transaction declined", "reason": result.get("explanations", ["Suspicious activity"])}), 400
     else:
-        print(f"Legitimate transaction processed (Score: {risk_score:.2f}).")
+        # Legitimate transaction
         try:
             conn = get_mysql_db()
             with conn.cursor() as cursor:
                 # Storing more details about the legitimate transaction.
                 sql = "INSERT INTO transactions (is_fraud, amount, details) VALUES (%s, %s, %s)"
-                # Ensure 'Amount' is correctly retrieved or defaulted.
                 amount = transaction_data.get('Amount', 0.0)
                 details = json.dumps(transaction_data)
                 cursor.execute(sql, (False, amount, details))
             conn.commit()
+        except Exception as e:
+            print(f"Error saving legitimate transaction: {e}")
         finally:
             conn.close()
 
@@ -96,6 +87,11 @@ def get_dashboard_data():
         finally:
             mysql_conn.close()
 
+        # --- Failed Payments (MongoDB) ---
+        failed_payments_collection = mongo_db['failed_payments']
+        failed_payments_logs = list(failed_payments_collection.find().sort("_id", -1).limit(50))
+        failed_payments_json = json.loads(json_util.dumps(failed_payments_logs))
+
         # --- Summary Calculation ---
         total_transactions = total_suspicious + total_legitimate
         fraud_percentage = (total_suspicious / total_transactions * 100) if total_transactions > 0 else 0
@@ -107,7 +103,8 @@ def get_dashboard_data():
                 "fraud_percentage": f"{fraud_percentage:.2f}%"
             },
             "honeypot_logs": honeypot_logs_json,
-            "legitimate_transactions": legitimate_transactions
+            "legitimate_transactions": legitimate_transactions,
+            "failed_payments": failed_payments_json
         }
         
         return jsonify(dashboard_data), 200
@@ -192,3 +189,20 @@ def get_analytics_data():
     except Exception as e:
         print(f"CRITICAL Error in get_analytics_data: {e}")
         return jsonify({"error": f"Failed to retrieve analytics data: {e}"}), 500
+
+@api_blueprint.route('/log_failed_payment', methods=['POST'])
+def log_failed_payment():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid JSON"}), 400
+    try:
+        # Avoid timezone-aware issues by using UTC time directly
+        data['LoggedAt'] = datetime.utcnow()
+        mongo_db = get_mongo_db()
+        collection = mongo_db['failed_payments']
+        collection.insert_one(data)
+        return jsonify({"status": "success", "message": "Failed payment logged successfully"}), 200
+    except Exception as e:
+        print(f"Error logging failed payment: {e}")
+        return jsonify({"error": f"Failed to log payment: {e}"}), 500
+

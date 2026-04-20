@@ -7,197 +7,58 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --sidebar-bg: #111827;
-            --main-bg: #030712;
-            --card-bg: rgba(31, 41, 55, 0.5);
-            --border-color: rgba(55, 65, 81, 0.7);
-            --text-primary: #ffffff;
-            --text-secondary: #e5e7eb;
-            --accent-green: #10b981;
-            --accent-orange: #f59e0b;
-            --accent-red: #ef4444;
-            --accent-blue: #3b82f6;
-        }
-
-        @keyframes count-up {
-            from { transform: translateY(15px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--main-bg);
-            color: var(--text-primary);
-            margin: 0;
-            display: flex;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            background-image: radial-gradient(circle at top left, rgba(59, 130, 246, 0.15), transparent 30%),
-                              radial-gradient(circle at bottom right, rgba(239, 68, 68, 0.15), transparent 40%);
-            background-attachment: fixed;
-        }
-
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            padding: 25px;
-            height: 100vh;
-            position: fixed;
-            border-right: 1px solid var(--border-color);
-            z-index: 10;
-        }
-
-        .sidebar h1 {
-            font-size: 1.8em;
-            font-weight: 700;
-            margin: 0 0 40px 0;
-            text-align: center;
-            letter-spacing: 1px;
-            color: var(--accent-blue);
-        }
-
-        .sidebar ul { list-style: none; padding: 0; }
-        .sidebar ul li a {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-weight: 500;
-            transition: background-color 0.2s, color 0.2s;
-        }
-
-        .sidebar ul li a.active, .sidebar ul li a:hover {
-            background-color: var(--accent-blue);
-            color: var(--text-primary);
-        }
-
-        .main-content {
-            margin-left: 260px;
-            width: calc(100% - 260px);
-            padding: 40px;
-        }
-        
-        .header {
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            font-size: 2.5em;
-            font-weight: 700;
-            margin: 0;
-        }
-        .header p {
-            color: var(--text-secondary);
-            font-size: 1.1em;
-            margin-top: 5px;
-        }
-
-        .status-overlay {
-            text-align: center;
-            padding: 50px;
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(10px);
-        }
-
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-            border-color: rgba(59, 130, 246, 0.5);
-        }
-
-        .kpi-card { display: flex; align-items: center; }
-        .kpi-card .icon {
-            font-size: 2em;
-            margin-right: 20px;
-            padding: 15px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .icon-legit { background-color: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
-        .icon-suspicious { background-color: rgba(245, 158, 11, 0.1); color: var(--accent-orange); }
-        .icon-fraud { background-color: rgba(239, 68, 68, 0.1); color: var(--accent-red); }
-
-        .card-content h3 { 
-            margin: 0; 
-            font-size: 2.2em; 
-            font-weight: 700;
-            animation: count-up 0.5s ease-out;
-        }
-        .card-content p { margin: 5px 0 0; color: var(--text-secondary); text-transform: uppercase; font-size: 0.9em; font-weight: 500; letter-spacing: 0.5px; }
-
-        .chart-card h2, .table-card h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
-
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        th { font-weight: 600; text-transform: uppercase; font-size: 0.8em; color: var(--text-secondary); letter-spacing: 0.5px; }
-        tbody tr { transition: background-color 0.2s; }
-        tbody tr:hover { background-color: rgba(59, 130, 246, 0.1); }
-        td { color: var(--text-primary); }
-        .feature-list { font-family: monospace; font-size: 0.9em; color: var(--text-secondary); white-space: pre-wrap; max-height: 100px; overflow-y: auto; background: #111827; padding: 8px; border-radius: 4px; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="sidebar">
-        <h1>FraudShield</h1>
-        <ul>
-            <li><a href="/" class="active">
+        <div class="sidebar-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <h1>FraudShield</h1>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="/" class="nav-item active">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                <span>Dashboard</span>
+                <span>Dashboard Overview</span>
             </a></li>
-            <li><a href="/analytics.html">
+            <li><a href="/analytics.html" class="nav-item">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
-                <span>Analytics</span>
+                <span>Deep Analytics</span>
             </a></li>
-            <li><a href="/settings.html">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                <span>Settings</span>
+            <li><a href="/checkout" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <span>Payment Gateway Demo</span>
             </a></li>
         </ul>
     </div>
 
-    <div class="main-content" id="main-content">
-        <div class="status-overlay" id="loading-state">
-            <h2>Loading Dashboard Data...</h2>
-            <p>Please wait a moment.</p>
+    <div class="main-wrapper">
+        <nav class="top-navbar">
+            <div class="page-title">
+                <h2>Real-time Monitoring</h2>
+                <p>Ensure network integrity across all transactions.</p>
+            </div>
+            <div class="user-controls">
+                <div class="notification-bell">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <div class="notification-dot"></div>
+                </div>
+                <div class="user-profile">
+                    <div class="user-info" style="text-align: right;">
+                        <span class="user-name">Admin User</span>
+                        <span class="user-role">Security Ops</span>
+                    </div>
+                    <div class="avatar">AU</div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content" id="main-content">
+            <div class="status-overlay glass-panel animate-up" id="loading-state" style="padding: 50px; text-align: center;">
+                <h2>Loading Dashboard Data...</h2>
+                <p style="color: var(--text-secondary);">Connecting to API endpoints...</p>
+            </div>
         </div>
     </div>
 
@@ -206,74 +67,134 @@
             const mainContent = document.getElementById('main-content');
             let chartInstance = null;
 
+            window.switchTab = function(evt, tabId) {
+                document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById(tabId).style.display = 'block';
+                evt.currentTarget.classList.add('active');
+            };
+
+            window.filterTable = function(tableId, query, searchColIndex) {
+                const term = query.toLowerCase();
+                const tbody = document.querySelector(`#${tableId} tbody`);
+                if (!tbody) return;
+                Array.from(tbody.rows).forEach(row => {
+                    const cell = row.cells[searchColIndex];
+                    if (cell) {
+                        const txt = cell.textContent || cell.innerText;
+                        row.style.display = txt.toLowerCase().indexOf(term) > -1 ? '' : 'none';
+                    }
+                });
+            };
+
             const renderDashboard = () => `
-                <div class="header">
-                    <h1>Dashboard Overview</h1>
-                    <p>Real-time analysis of transaction integrity.</p>
-                </div>
                 <div class="kpi-grid">
-                    <div class="card kpi-card">
-                        <div class="icon icon-legit">
+                    <div class="glass-panel kpi-card animate-up delay-1">
+                        <div class="kpi-icon icon-legit">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                         </div>
-                        <div class="card-content">
+                        <div class="kpi-info">
                             <h3 id="total-legitimate">--</h3>
-                            <p>Legitimate Transactions</p>
+                            <p>Legitimate Txns</p>
                         </div>
                     </div>
-                    <div class="card kpi-card">
-                        <div class="icon icon-suspicious">
+                    <div class="glass-panel kpi-card animate-up delay-2">
+                        <div class="kpi-icon icon-suspicious">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                         </div>
-                        <div class="card-content">
+                        <div class="kpi-info">
                             <h3 id="total-suspicious">--</h3>
-                            <p>Suspicious Transactions</p>
+                            <p>Blocked Attempts</p>
                         </div>
                     </div>
-                    <div class="card kpi-card">
-                        <div class="icon icon-fraud">
+                    <div class="glass-panel kpi-card animate-up delay-3">
+                        <div class="kpi-icon icon-fraud">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                         </div>
-                        <div class="card-content">
+                        <div class="kpi-info">
                             <h3 id="fraud-percentage">--</h3>
-                            <p>Fraud Percentage</p>
+                            <p>System Anomaly Rate</p>
                         </div>
                     </div>
                 </div>
-                <div class="card chart-card">
+                <div class="glass-panel chart-card animate-up delay-1">
                     <h2>Transaction Analysis</h2>
                     <div class="chart-container">
                         <canvas id="transaction-chart"></canvas>
                     </div>
                 </div>
-                <div class="card table-card">
-                    <h2>Honeypot Activity Logs</h2>
-                    <table id="honeypot-logs-table">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>Amount</th>
-                                <th>Attacker IP</th>
-                                <th>Attempted Actions</th>
-                                <th>Scaled Features</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                <div class="tabs-container animate-up delay-2">
+                    <div class="tabs-header glass-panel">
+                        <button class="tab-btn active" onclick="switchTab(event, 'honeypot-tab')">Honeypot Interceptions</button>
+                        <button class="tab-btn" onclick="switchTab(event, 'legit-tab')">Verified Transactions</button>
+                        <button class="tab-btn" onclick="switchTab(event, 'failed-tab')">Failed Gateway Payments</button>
+                    </div>
                 </div>
-                <div class="card table-card">
-                    <h2>Recent Legitimate Transactions</h2>
-                    <table id="legitimate-transactions-table">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>Amount</th>
-                                <th>Risk Score</th>
-                                <th>Scaled Features</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+
+                <div class="tab-content active glass-panel table-card animate-up delay-3" id="honeypot-tab">
+                    <div class="card-header">
+                        <h2>Honeypot Interceptions</h2>
+                        <input type="text" class="search-input" placeholder="Search Attacker IP..." oninput="filterTable('honeypot-logs-table', this.value, 2)">
+                    </div>
+                    <div class="table-responsive">
+                        <table id="honeypot-logs-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Amount</th>
+                                    <th>Location</th>
+                                    <th>Attacker IP</th>
+                                    <th>Attempted Actions</th>
+                                    <th>Scaled Features</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-content glass-panel table-card animate-up delay-3" id="legit-tab" style="display: none;">
+                    <div class="card-header">
+                        <h2>Recent Verified Transactions</h2>
+                        <input type="text" class="search-input" placeholder="Search Transaction ID..." oninput="filterTable('legitimate-transactions-table', this.value, 1)">
+                    </div>
+                    <div class="table-responsive">
+                        <table id="legitimate-transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Amount</th>
+                                    <th>Risk Score</th>
+                                    <th>Location</th>
+                                    <th>IP Address</th>
+                                    <th>Scaled Features</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-content glass-panel table-card animate-up delay-3" id="failed-tab" style="display: none;">
+                    <div class="card-header">
+                        <h2>Gateway Failed Payments</h2>
+                        <input type="text" class="search-input" placeholder="Search Order ID..." oninput="filterTable('failed-payments-table', this.value, 3)">
+                    </div>
+                    <div class="table-responsive">
+                        <table id="failed-payments-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Amount</th>
+                                    <th>Location</th>
+                                    <th>IP Address</th>
+                                    <th>Reason</th>
+                                    <th>Razorpay Order ID</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             `;
 
@@ -316,15 +237,20 @@
             };
 
             const formatFeatures = (features) => {
+                if (!features) return 'N/A';
                 if (typeof features === 'string') {
                     try { features = JSON.parse(features); } catch (e) { return features; }
                 }
-                return Object.entries(features)
-                    .map(([key, value]) => `${key.padEnd(15, ' ')}: ${Number(value).toFixed(4)}`)
-                    .join('\n');
+                try {
+                    return Object.entries(features)
+                        .map(([key, value]) => `${key.padEnd(15, ' ')}: ${Number(value).toFixed(4)}`)
+                        .join('\n');
+                } catch (e) {
+                    return 'Error parsing features';
+                }
             };
 
-            const populateTable = (tableId, data, columns) => {
+            const populateTable = (tableId, data, columns, highlightFirst = false) => {
                 const tableBody = document.querySelector(`${tableId} tbody`);
                 if (!tableBody) return;
                 tableBody.innerHTML = '';
@@ -341,7 +267,7 @@
                         columns.forEach(col => {
                             const cell = row.insertCell();
                             let value = item[col.key];
-                            if (col.formatter) value = col.formatter(value);
+                            if (col.formatter) value = col.formatter(value, item);
                             if (col.isHtml) cell.innerHTML = value; else cell.textContent = value;
                         });
                     });
@@ -351,9 +277,9 @@
             const renderChart = (honeypotLogs, legitimateTransactions) => {
                 const ctx = document.getElementById('transaction-chart').getContext('2d');
                 const allTransactions = [
-                    ...honeypotLogs.map(t => ({ ...t, type: 'suspicious' })),
-                    ...legitimateTransactions.map(t => ({ ...t, type: 'legitimate' }))
-                ].sort((a, b) => a.Timestamp - b.Timestamp);
+                    ...honeypotLogs.filter(t => t.Timestamp && t.Timestamp !== "N/A").map(t => ({ ...t, type: 'suspicious' })),
+                    ...legitimateTransactions.filter(t => t.Timestamp && t.Timestamp !== "N/A").map(t => ({ ...t, type: 'legitimate' }))
+                ].sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp));
 
                 if (chartInstance) chartInstance.destroy();
                 
@@ -379,17 +305,21 @@
                                 fill: true,
                                 tension: 0.4,
                                 pointBackgroundColor: 'var(--accent-orange)',
-                                pointRadius: 4
+                                pointBorderColor: 'var(--bg-color)',
+                                pointRadius: 4,
+                                pointHoverRadius: 6
                             },
                             {
-                                label: 'Legitimate Amount',
+                                label: 'Legitimate Amount ($)',
                                 data: allTransactions.map(t => t.type === 'legitimate' ? t.Amount : NaN),
                                 borderColor: 'var(--accent-green)',
                                 backgroundColor: createGradient(16, 185, 129),
                                 fill: true,
                                 tension: 0.4,
                                 pointBackgroundColor: 'var(--accent-green)',
-                                pointRadius: 4
+                                pointBorderColor: 'var(--bg-color)',
+                                pointRadius: 4,
+                                pointHoverRadius: 6
                             }
                         ]
                     },
@@ -418,6 +348,9 @@
                 });
             };
 
+            // Render HTML structure once
+            mainContent.innerHTML = renderDashboard();
+
             const fetchData = () => {
                 fetch('/api/dashboard_data')
                     .then(response => {
@@ -425,27 +358,46 @@
                         return response.json();
                     })
                     .then(data => {
-                        mainContent.innerHTML = renderDashboard();
                         updateKpis(data.summary);
 
+                        const formatLocation = item => {
+                            const entries = [item.City, item.State, item.Country].filter(v => v && v !== 'N/A');
+                            return entries.length > 0 ? entries.join(', ') : 'N/A';
+                        };
+
                         const honeypotColumns = [
-                            { key: 'Timestamp', formatter: val => new Date(val).toLocaleString() },
-                            { key: 'Amount', formatter: val => `$${val.toFixed(2)}` },
-                            { key: 'Attacker IP' },
-                            { key: 'Attempted Actions' },
-                            { key: 'Scaled Features', formatter: val => `<pre class="feature-list">${formatFeatures(val)}</pre>`, isHtml: true }
+                            { key: 'Timestamp', formatter: val => { const d = new Date(val); return isNaN(d.getTime()) ? '<span class="date-cell">N/A</span>' : `<span class="date-cell">${d.toLocaleString()}</span>`; }, isHtml: true },
+                            { key: 'Amount', formatter: val => `<span class="amount">$${val.toFixed(2)}</span>`, isHtml: true },
+                            { key: 'Location', formatter: (val, item) => `<span class="location-cell">${formatLocation(item)}</span>`, isHtml: true },
+                            { key: 'Attacker IP', formatter: val => `<span class="tx-id">${val}</span>`, isHtml: true },
+                            { key: 'Attempted Actions', formatter: val => val ? val : '<span class="badge warning">Unknown</span>', isHtml: true },
+                            { key: 'Scaled Features', formatter: val => `<div class="feature-list">${formatFeatures(val)}</div>`, isHtml: true }
                         ];
                         populateTable('#honeypot-logs-table', data.honeypot_logs, honeypotColumns);
 
                         const legitimateColumns = [
-                            { key: 'Timestamp', formatter: val => new Date(val).toLocaleString() },
-                            { key: 'Amount', formatter: val => `$${val.toFixed(2)}` },
-                            { key: 'Risk Score' },
-                            { key: 'Scaled Features', formatter: val => `<pre class="feature-list">${formatFeatures(val)}</pre>`, isHtml: true }
+                            { key: 'Timestamp', formatter: val => { const d = new Date(val); return isNaN(d.getTime()) ? '<span class="date-cell">N/A</span>' : `<span class="date-cell">${d.toLocaleString()}</span>`; }, isHtml: true },
+                            { key: 'Amount', formatter: val => `<span class="amount">$${val.toFixed(2)}</span>`, isHtml: true },
+                            { key: 'Risk Score', formatter: val => val < 0.3 ? `<span class="badge success">Safe (${val})</span>` : `<span class="badge warning">Check (${val})</span>`, isHtml: true },
+                            { key: 'Location', formatter: (val, item) => `<span class="location-cell">${formatLocation(item)}</span>`, isHtml: true },
+                            { key: 'IP Address', formatter: val => `<span class="tx-id">${val || 'N/A'}</span>`, isHtml: true },
+                            { key: 'Scaled Features', formatter: val => `<div class="feature-list">${formatFeatures(val)}</div>`, isHtml: true }
                         ];
                         populateTable('#legitimate-transactions-table', data.legitimate_transactions, legitimateColumns);
                         
+                        const failedColumns = [
+                            { key: 'LoggedAt', formatter: val => { const d = new Date(val); return isNaN(d.getTime()) ? '<span class="date-cell">N/A</span>' : `<span class="date-cell">${d.toLocaleString()}</span>`; }, isHtml: true },
+                            { key: 'transaction', formatter: val => `<span class="amount">$${val && val.Amount ? parseFloat(val.Amount).toFixed(2) : '0.00'}</span>`, isHtml: true },
+                            { key: 'Location', formatter: (val, item) => `<span class="location-cell">${formatLocation(item)}</span>`, isHtml: true },
+                            { key: 'ip_address', formatter: val => `<span class="tx-id">${val || 'N/A'}</span>`, isHtml: true },
+                            { key: 'error_details', formatter: val => val && val.description ? `<span class="badge danger">${val.description}</span>` : '<span class="badge warning">Unknown</span>', isHtml: true },
+                            { key: 'order_id', formatter: val => `<span class="tx-id">${val || 'N/A'}</span>`, isHtml: true }
+                        ];
+                        populateTable('#failed-payments-table', data.failed_payments || [], failedColumns);
+
                         renderChart(data.honeypot_logs, data.legitimate_transactions);
+
+
                     })
                     .catch(error => {
                         console.error('Error fetching dashboard data:', error);
@@ -454,6 +406,9 @@
             };
 
             fetchData();
+            
+            // Auto-refresh the dashboard data silently every 3 seconds
+            // setInterval(fetchData, 3000);
         });
     </script>
 

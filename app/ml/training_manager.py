@@ -5,15 +5,15 @@ from typing import List, Dict, Any, Tuple
 import json
 
 from app.database.crud import get_all_legitimate_transactions, get_all_honeypot_logs
-from app.ml.risk_analyzer import RiskAnalyzer
+from app.ml.adaptive_model import AdaptiveMLModel
 from config.settings import settings # Import settings to get SCALER_PATH
 
 class TrainingManager:
-    def __init__(self, risk_analyzer: RiskAnalyzer):
-        self.risk_analyzer = risk_analyzer
+    def __init__(self, adaptive_model: AdaptiveMLModel):
+        self.adaptive_model = adaptive_model
 
     def _prepare_training_data(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Fetches data from databases and prepares it for model training using the RiskAnalyzer's preprocessing."""
+        """Fetches data from databases and prepares it for model training using the AdaptiveMLModel's preprocessing."""
         print("Preparing training data using centralized preprocessing...")
         
         # 1. Fetch data
@@ -28,7 +28,7 @@ class TrainingManager:
             # The transaction data is in the 'details' column as a JSON string
             try:
                 details = json.loads(trans['details'])
-                feature_vector = self.risk_analyzer._preprocess_transaction_data(details)
+                feature_vector = self.adaptive_model._preprocess_transaction_data(details)
                 features.append(feature_vector[0])
                 labels.append(0) # 0 for legitimate
             except (json.JSONDecodeError, KeyError):
@@ -39,8 +39,8 @@ class TrainingManager:
             trans_data = log.get('transaction_data', {})
             if not trans_data:
                 continue
-            # Use the RiskAnalyzer's own preprocessing method
-            feature_vector = self.risk_analyzer._preprocess_transaction_data(trans_data)
+            # Use the AdaptiveMLModel's own preprocessing method
+            feature_vector = self.adaptive_model._preprocess_transaction_data(trans_data)
             features.append(feature_vector[0])
             labels.append(1) # 1 for fraudulent
 
@@ -67,10 +67,10 @@ class TrainingManager:
         print(f"StandardScaler retrained and saved to {settings.SCALER_PATH}")
 
         # 2. Retrain the ML model using the newly scaled data
-        self.risk_analyzer.train_model(X_train_scaled, y_train)
+        self.adaptive_model.train_model(X_train_scaled, y_train)
         
-        # 3. Update the RiskAnalyzer's internal scaler with the new one
-        self.risk_analyzer.scaler = new_scaler
+        # 3. Update the AdaptiveMLModel's internal scaler with the new one
+        self.adaptive_model.scaler = new_scaler
 
         return {
             "status": "success",

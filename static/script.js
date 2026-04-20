@@ -118,12 +118,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     transactionForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const transaction = { transaction_id: document.getElementById('transaction_id').value, user_id: document.getElementById('user_id').value, amount: parseFloat(document.getElementById('amount').value), currency: 'USD', timestamp: new Date().toISOString(), payment_method: document.getElementById('payment_method').value, country: document.getElementById('country').value };
+        const transaction = { transaction_id: document.getElementById('transaction_id').value, user_id: document.getElementById('user_id').value, Amount: parseFloat(document.getElementById('amount').value), currency: 'USD', timestamp: new Date().toISOString(), payment_method: document.getElementById('payment_method').value, country: document.getElementById('country').value };
         try {
             const response = await fetch(`${API_BASE_URL}/process_transaction`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(transaction) });
             const result = await response.json();
             let message = '', type = 'success';
             if (result.status === 'processed_legitimately') {
+                // Must confirm the transaction to save it to DB
+                await fetch(`${API_BASE_URL}/confirm_transaction`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        transaction: transaction,
+                        risk_score: result.risk_score,
+                        scaled_features: result.scaled_features
+                    })
+                });
                 message = `Transaction ${result.transaction_id} processed successfully.`;
             } else if (result.status === 'diverted_to_honeypot') {
                 type = 'info';
@@ -153,5 +163,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- INITIALIZATION ---
     fetchAndDisplayData();
-    setInterval(fetchAndDisplayData, REFRESH_INTERVAL);
+    // setInterval(fetchAndDisplayData, REFRESH_INTERVAL); // Disabled automatic database refreshing
 });

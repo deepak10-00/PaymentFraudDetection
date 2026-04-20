@@ -20,6 +20,10 @@ services:
       RISK_THRESHOLD: 0.7
       ML_MODEL_PATH: /app/fraud_model.pkl
       SCALER_PATH: /app/scaler.pkl
+      # --- Razorpay Integration ---
+      # Replace these placeholders with your actual Razorpay Test Keys
+      RAZORPAY_KEY_ID: rzp_test_SPNsgLxU74TfVI
+      RAZORPAY_KEY_SECRET: cw3onW0yrcs41Ix83BhG8P9Y
     depends_on:
       - mysql
       - mongodb
@@ -53,6 +57,20 @@ services:
     networks:
       - proactive_network
 
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - mysql
+    networks:
+      - proactive_network
+
 networks:
   proactive_network:
     driver: bridge
@@ -60,3 +78,4 @@ networks:
 volumes:
   mysql_data:
   mongodb_data:
+  grafana_data:

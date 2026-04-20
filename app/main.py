@@ -36,5 +36,9 @@ async def read_analytics():
 async def read_settings():
     return "static/settings.html"
 
+@app.get("/checkout", response_class=FileResponse)
+async def read_checkout():
+    return "static/checkout.html"
+
 # 4. Mount the static directory to serve the frontend (must come after other routes)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

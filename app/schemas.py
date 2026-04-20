@@ -35,7 +35,19 @@ class Transaction(BaseModel):
     V28: float
     Amount: float
     
-    # The following fields are optional and are not used by the model,
     # but can be useful for logging and tracking.
     transaction_id: Optional[str] = None
     user_id: Optional[str] = None
+    country: Optional[str] = "US"
+    state: Optional[str] = "N/A"
+    city: Optional[str] = "N/A"
+    payment_method: Optional[str] = "credit_card"
+    
+    model_config = {
+        "extra": "allow"
+    }
+
+class ConfirmTransactionRequest(BaseModel):
+    transaction: Transaction
+    risk_score: float
+    scaled_features: list[float]

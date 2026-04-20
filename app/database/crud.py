@@ -4,32 +4,22 @@ from typing import List, Dict, Any
 import json # Import the json module
 from datetime import datetime
 
-def save_legitimate_transaction(transaction: Transaction, risk_score: float, scaled_features: List[float]):
+def save_legitimate_transaction(transaction: Transaction, risk_score: float, scaled_features: List[float], ip_address: str = "N/A"):
     """Saves a legitimate transaction to the MySQL database."""
     db_conn = None
     try:
         db_conn = get_mysql_db()
         with db_conn.cursor() as cursor:
-            # Convert the 'Time' field (seconds since an epoch) to a datetime object
-            # This is a placeholder conversion; in a real system, you'd have a proper timestamp.
-            mysql_timestamp = datetime.utcfromtimestamp(transaction.Time).strftime('%Y-%m-%d %H:%M:%S')
-            
-            scaled_features_json = json.dumps(scaled_features) # Convert list to JSON string
+            # The 'details' column is a JSON string of all transaction details
+            transaction_dict = transaction.model_dump()
+            transaction_dict["risk_score"] = risk_score
+            transaction_dict["scaled_features"] = scaled_features
+            transaction_dict["ip_address"] = ip_address
+            details = json.dumps(transaction_dict)
 
-            sql = """INSERT INTO transactions 
-                     (transaction_id, user_id, amount, currency, payment_method, country, transaction_timestamp, risk_score, scaled_features)
-                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-            cursor.execute(sql, (
-                transaction.transaction_id,
-                transaction.user_id,
-                transaction.Amount, # Use Amount from the model
-                "USD", # Currency is not in the model, so we hardcode it
-                "credit_card", # Payment method is not in the model, so we hardcode it
-                "US", # Country is not in the model, so we hardcode it
-                mysql_timestamp,
-                risk_score,
-                scaled_features_json # Store the JSON string
-            ))
+            sql = "INSERT INTO transactions (is_fraud, amount, details) VALUES (%s, %s, %s)"
+            cursor.execute(sql, (False, transaction.Amount, details))
+            
         db_conn.commit()
         print(f"Successfully saved legitimate transaction {transaction.transaction_id} to MySQL.")
     except Exception as e:
